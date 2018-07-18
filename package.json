@@ -4,12 +4,13 @@
   "description": "Własne próba API w nodejs na podstawie kursu Complete nodejs developer course",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server/server.js"
+    "test": "export NODE_ENV=test || SET \"NODE_ENV=test\" && mocha \"./{,!(node_modules)/**/}*.test.js\" --exit",
+    "start": "node server/server.js",
+    "test-watch": "nodemon --exec \"npm test\""
   },
   "engines": {
     "node": "10.6.0"
-  },  
+  },
   "author": "Jurek Skowron",
   "license": "ISC",
   "dependencies": {
@@ -17,6 +18,9 @@
     "express": "^4.16.3"
   },
   "devDependencies": {
-    "nodemon": "^1.18.2"
+    "expect": "^23.4.0",
+    "mocha": "^5.2.0",
+    "nodemon": "^1.18.2",
+    "supertest": "^3.1.0"
   }
 }
