@@ -2,7 +2,7 @@
   "name": "budget-api",
   "version": "1.0.0",
   "description": "Własne próba API w nodejs na podstawie kursu Complete nodejs developer course",
-  "main": "index.js",
+  "main": "server/server.js",
   "scripts": {
     "test": "export NODE_ENV=test || SET \"NODE_ENV=test\" && mocha \"./{,!(node_modules)/**/}*.test.js\" --exit",
     "start": "node server/server.js",
