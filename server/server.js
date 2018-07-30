@@ -55,7 +55,7 @@ app.get('/users/me', authenticate, (req, res) => {
 
 if(!module.parent){
     app.listen(port, () => {
-        console.log(`Server sterted on port ${port}`);
+        console.log(`Server started on port ${port}`);
     });
 }
 
