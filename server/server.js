@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 const {mongoose} = require('./db/mongoose');
 const {Test} = require('./models/test');
 const {User} = require('./models/user');
+const {authenticate} = require('./middleware/authenticate');
 
 const app = express();
 app.use(bodyParser.json());
@@ -44,6 +45,11 @@ app.post('/users', (req, res) => {
         console.log(err);
         res.status(400).send(err);
     });
+});
+
+// prywatna route GET /users/me - wymaga autentykacji
+app.get('/users/me', authenticate, (req, res) => {
+    res.send(req.user);
 });
 
 
