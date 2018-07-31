@@ -183,3 +183,56 @@ describe('POST /users', () => {
         });
     });
 });
+
+describe('POST /users/login', () => {
+    it('should login user and return auth token', done => {
+        request(app)
+        .post('/users/login')
+        .send({
+            email: users[0].email,
+            password: users[0].password
+        })
+        .expect(200)
+        .expect(res => {
+            expect(res.headers['x-auth']).toBeDefined();
+        })
+        .end((err, res) => {
+            if(err){
+                return done(err);
+            }
+
+            User.findById(users[0]._id).then(user => {
+                expect(user.tokens).toContainEqual(
+                    expect.objectContaining({
+                        access: 'auth',
+                        token: res.headers['x-auth']
+                }));
+                
+                done();
+            }).catch(err => done(err));
+        });
+    });
+
+    it('should reject invalid login', done => {
+        request(app)
+        .post('/users/login')
+        .send({
+            email: users[0].email,
+            password: 'wrongPass'
+        })
+        .expect(400)
+        .expect(res => {
+            expect(res.headers['x-auth']).toBeUndefined();
+        })
+        .end((err, res) => {
+            if(err){
+                return done(err);
+            }
+
+            User.findById(users[0]._id).then(user => {
+                expect(user.tokens.length).toBe(1);
+                done();
+            }).catch(err => done(err));
+        });
+    });
+});

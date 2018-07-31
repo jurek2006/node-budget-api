@@ -31,6 +31,7 @@ app.post('/test', (req, res) => {
 
 });
 
+// route do tworzenia użytkownika
 app.post('/users', (req, res) => {
     const user = new User(_.pick(req.body, ['email', 'password']));
 
@@ -45,6 +46,21 @@ app.post('/users', (req, res) => {
         console.log(err);
         res.status(400).send(err);
     });
+});
+
+// route do logowania użytkownika
+app.post('/users/login', (req, res) => {
+    const body = _.pick(req.body, ['email', 'password']);
+
+    // weryfikowanie czy użytkownik o takim email i haśle istnieje
+    User.findByCredentials(body.email, body.password).then(user => {
+        // utworzenie nowego tokenu dla użytkownika i jego zwrócenie w nagłówku odpowiedzi
+        return user.generateAuthToken().then(token => {
+            res.header('x-auth', token).send(user);
+        });
+    }).catch(err => {
+        res.status(400).send();
+    })
 });
 
 // prywatna route GET /users/me - wymaga autentykacji
