@@ -4,10 +4,13 @@ const request = require('supertest');
 const {app} = require('./../server');
 const {Test} = require('./../models/test');
 const {User} = require('./../models/user');
-const {tests, populateTests, users, populateUsers} = require('./seed/seed');
+const {BudgetOperation} = require('./../models/budgetOperation');
+const {tests, populateTests, users, populateUsers, budgetOperations, populateBudgetOperations} = require('./seed/seed');
 
 beforeEach(populateTests);
 beforeEach(populateUsers);
+beforeEach(populateBudgetOperations);
+
 
 describe('GET /', () => {
     
@@ -60,6 +63,156 @@ describe('POST /test', () => {
                 done();
             }).catch(err => done(err));
         });
+    });
+});
+
+describe('POST /budget/add', () => {
+    it('should add new budget operation', done => {
+        const newOperation = {
+            value: 999.11,
+            date: '2017-07-18',
+            description: "jakiś opis"
+        }
+
+        request(app)
+        .post('/budget/add')
+        .send(newOperation)
+        .expect(200)
+        .expect(res => {
+            expect(res.body.value).toBe(newOperation.value);
+            expect(res.body.description).toBe(newOperation.description);
+            expect(new Date(res.body.date)).toEqual(new Date(newOperation.date));
+        })
+        .end(async (err, res) => {
+            if(err){
+                return done(err);
+            }
+
+            try{
+                const allOperations = await BudgetOperation.find({});
+                expect(allOperations.length).toBe(3);
+                const operationInDB = await BudgetOperation.findById(res.body._id);
+                expect(operationInDB.value).toBe(newOperation.value);
+                expect(operationInDB.description).toBe(newOperation.description);
+                expect(new Date(operationInDB.date)).toEqual(new Date(newOperation.date));
+                done();
+            } catch(err){done(err)};
+            
+        });
+    });
+
+    it('should not create budget operation with invalid date', done => {
+        const newOperation = {
+            value: 999.11,
+            date: 'inne',
+            description: "jakiś opis"
+        }
+
+        request(app)
+        .post('/budget/add')
+        .send(newOperation)
+        .expect(400)
+        .end(async (err, res) => {
+            if(err){
+                return done(err);
+            }
+
+            try{
+                const operationsInDB = await BudgetOperation.find({});
+                expect(operationsInDB.length).toBe(2);
+                done();
+            } catch(err){
+                return done(err);
+            }
+        });
+    });
+
+    it('should not create budget operation without given data', done => {
+        const newOperation = {
+            value: 999.11,
+            description: "jakiś opis"
+        }
+
+        request(app)
+        .post('/budget/add')
+        .send(newOperation)
+        .expect(400)
+        .end(async (err, res) => {
+            if(err){
+                return done(err);
+            }
+
+            try{
+                const operationsInDB = await BudgetOperation.find({});
+                expect(operationsInDB.length).toBe(2);
+                done();
+            } catch(err){
+                return done(err);
+            }
+        });
+    });
+
+    it('should not create budget operation with invalid value', done => {
+        const newOperation = {
+            value: 'wrong',
+            date: '2017-07-18',
+            description: "jakiś opis"
+        }
+
+        request(app)
+        .post('/budget/add')
+        .send(newOperation)
+        .expect(400)
+        .end(async (err, res) => {
+            if(err){
+                return done(err);
+            }
+
+            try{
+                const operationsInDB = await BudgetOperation.find({});
+                expect(operationsInDB.length).toBe(2);
+                done();
+            } catch(err){
+                return done(err);
+            }
+        });
+    });
+
+    it('should not create budget operation without given value', done => {
+        const newOperation = {
+            date: '2017-07-18',
+            description: "jakiś opis"
+        }
+
+        request(app)
+        .post('/budget/add')
+        .send(newOperation)
+        .expect(400)
+        .end(async (err, res) => {
+            if(err){
+                return done(err);
+            }
+
+            try{
+                const operationsInDB = await BudgetOperation.find({});
+                expect(operationsInDB.length).toBe(2);
+                done();
+            } catch(err){
+                return done(err);
+            }
+        });
+    });
+});
+
+describe('GET /budget', () => {
+    it('should get all budget operations', done => {
+        request(app)
+        .get('/budget')
+        .expect(200)
+        .expect(res => {
+            expect(res.body.length).toBe(2);
+        })
+        .end(done);
     });
 });
 

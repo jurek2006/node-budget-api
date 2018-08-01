@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 
 const {Test} = require('./../../models/test');
 const {User} = require('./../../models/user');
+const {BudgetOperation} = require('./../../models/budgetOperation');
 
 const tests = [
     {_id: new ObjectID(), text: 'First test item'},
@@ -12,6 +13,25 @@ const tests = [
 const populateTests = done => {
     Test.remove({}).then(() => {
         return Test.insertMany(tests);
+    }).then(() => done());
+}
+
+const budgetOperations = [{
+        _id: new ObjectID(),
+        value: 11.11,
+        date: "2018-07-18",
+        description: "jakiś"
+    }, {
+        _id: new ObjectID(),
+        value: -1121.11,
+        date: "2018-07-15",
+        description: "inny"
+    }
+];
+
+const populateBudgetOperations = done => {
+    BudgetOperation.remove({}).then(() => {
+        return BudgetOperation.insertMany(budgetOperations);
     }).then(() => done());
 }
 
@@ -40,4 +60,4 @@ const populateUsers = done => {
 };
 
 
-module.exports = {tests, populateTests, users, populateUsers};
+module.exports = {tests, populateTests, users, populateUsers, budgetOperations, populateBudgetOperations};

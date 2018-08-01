@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 const {mongoose} = require('./db/mongoose');
 const {Test} = require('./models/test');
 const {User} = require('./models/user');
+const {BudgetOperation} = require('./models/budgetOperation');
 const {authenticate} = require('./middleware/authenticate');
 
 const app = express();
@@ -31,6 +32,37 @@ app.post('/test', (req, res) => {
 
 });
 
+// ROUTES BUDGET OPERATIONS
+
+// route tworzenia wpisu (operacji) do budżetu
+app.post('/budget/add', async (req, res) => {
+    try{
+        const newOperation = new BudgetOperation({
+            value: req.body.value,
+            date: req.body.date,
+            description: req.body.description
+        });
+        
+        const operation = await newOperation.save();
+        res.send(operation);
+    } catch(err){
+        res.status(400).send(err);
+    }
+});
+
+// route pobierania wszystkich operacji 
+app.get('/budget', async (req, res) => {
+    try{
+        const allOperations = await BudgetOperation.find({});
+        res.send(allOperations);
+    } catch(err){
+        res.status(400).send(err);
+    }
+});
+
+
+// ROUTES USER
+
 // route do tworzenia użytkownika
 app.post('/users', (req, res) => {
     const user = new User(_.pick(req.body, ['email', 'password']));
@@ -43,7 +75,6 @@ app.post('/users', (req, res) => {
         res.header('x-auth', token).send(user);
     })
     .catch(err => {
-        console.log(err);
         res.status(400).send(err);
     });
 });
