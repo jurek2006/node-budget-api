@@ -12,6 +12,10 @@ const BudgetOperation = mongoose.model('BudgetOperation', {
     description: {
         type: String,
         trim: true
+    },
+    _creator: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true
     }
 });
 

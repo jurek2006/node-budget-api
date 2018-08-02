@@ -34,13 +34,14 @@ app.post('/test', (req, res) => {
 
 // ROUTES BUDGET OPERATIONS
 
-// route tworzenia wpisu (operacji) do budżetu
-app.post('/budget/add', async (req, res) => {
+// route tworzenia wpisu (operacji) do budżetu dla zautentyfikowanego użytkownika
+app.post('/budget/add', authenticate, async (req, res) => {
     try{
         const newOperation = new BudgetOperation({
             value: req.body.value,
             date: req.body.date,
-            description: req.body.description
+            description: req.body.description,
+            _creator: req.user //ustawiane przez authenticate
         });
         
         const operation = await newOperation.save();
@@ -50,10 +51,12 @@ app.post('/budget/add', async (req, res) => {
     }
 });
 
-// route pobierania wszystkich operacji 
-app.get('/budget', async (req, res) => {
+// route pobierania wszystkich operacji dla zautentyfikowanego użytkownika
+app.get('/budget', authenticate, async (req, res) => {
     try{
-        const allOperations = await BudgetOperation.find({});
+        let allOperations = await BudgetOperation.find({
+            _creator: req.user //ustawiane przez authenticate
+        });
         res.send(allOperations);
     } catch(err){
         res.status(400).send(err);

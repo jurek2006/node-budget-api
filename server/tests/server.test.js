@@ -67,7 +67,7 @@ describe('POST /test', () => {
 });
 
 describe('POST /budget/add', () => {
-    it('should add new budget operation', done => {
+    it('should add new budget operation for authenticated user', done => {
         const newOperation = {
             value: 999.11,
             date: '2017-07-18',
@@ -76,6 +76,7 @@ describe('POST /budget/add', () => {
 
         request(app)
         .post('/budget/add')
+        .set('x-auth', users[0].tokens[0].token)
         .send(newOperation)
         .expect(200)
         .expect(res => {
@@ -89,12 +90,39 @@ describe('POST /budget/add', () => {
             }
 
             try{
-                const allOperations = await BudgetOperation.find({});
+                const allOperations = await BudgetOperation.find({
+                    _creator: users[0]._id
+                });
                 expect(allOperations.length).toBe(3);
                 const operationInDB = await BudgetOperation.findById(res.body._id);
                 expect(operationInDB.value).toBe(newOperation.value);
                 expect(operationInDB.description).toBe(newOperation.description);
                 expect(new Date(operationInDB.date)).toEqual(new Date(newOperation.date));
+                done();
+            } catch(err){done(err)};
+            
+        });
+    });
+
+    it('should return 401 when user not authenticated', done => {
+        const newOperation = {
+            value: 999.11,
+            date: '2017-07-18',
+            description: "jakiś opis"
+        }
+
+        request(app)
+        .post('/budget/add')
+        .send(newOperation)
+        .expect(401)
+        .end(async (err, res) => {
+            if(err){
+                return done(err);
+            }
+
+            try{
+                const allOperations = await BudgetOperation.find({});
+                expect(allOperations.length).toBe(3);
                 done();
             } catch(err){done(err)};
             
@@ -110,6 +138,7 @@ describe('POST /budget/add', () => {
 
         request(app)
         .post('/budget/add')
+        .set('x-auth', users[0].tokens[0].token)
         .send(newOperation)
         .expect(400)
         .end(async (err, res) => {
@@ -118,8 +147,10 @@ describe('POST /budget/add', () => {
             }
 
             try{
-                const operationsInDB = await BudgetOperation.find({});
-                expect(operationsInDB.length).toBe(2);
+                const allOperations = await BudgetOperation.find({
+                    _creator: users[0]._id
+                });
+                expect(allOperations.length).toBe(2);
                 done();
             } catch(err){
                 return done(err);
@@ -135,6 +166,7 @@ describe('POST /budget/add', () => {
 
         request(app)
         .post('/budget/add')
+        .set('x-auth', users[0].tokens[0].token)
         .send(newOperation)
         .expect(400)
         .end(async (err, res) => {
@@ -143,8 +175,10 @@ describe('POST /budget/add', () => {
             }
 
             try{
-                const operationsInDB = await BudgetOperation.find({});
-                expect(operationsInDB.length).toBe(2);
+                const allOperations = await BudgetOperation.find({
+                    _creator: users[0]._id
+                });
+                expect(allOperations.length).toBe(2);
                 done();
             } catch(err){
                 return done(err);
@@ -161,6 +195,7 @@ describe('POST /budget/add', () => {
 
         request(app)
         .post('/budget/add')
+        .set('x-auth', users[0].tokens[0].token)
         .send(newOperation)
         .expect(400)
         .end(async (err, res) => {
@@ -169,8 +204,10 @@ describe('POST /budget/add', () => {
             }
 
             try{
-                const operationsInDB = await BudgetOperation.find({});
-                expect(operationsInDB.length).toBe(2);
+                const allOperations = await BudgetOperation.find({
+                    _creator: users[0]._id
+                });
+                expect(allOperations.length).toBe(2);
                 done();
             } catch(err){
                 return done(err);
@@ -186,6 +223,7 @@ describe('POST /budget/add', () => {
 
         request(app)
         .post('/budget/add')
+        .set('x-auth', users[0].tokens[0].token)
         .send(newOperation)
         .expect(400)
         .end(async (err, res) => {
@@ -194,8 +232,10 @@ describe('POST /budget/add', () => {
             }
 
             try{
-                const operationsInDB = await BudgetOperation.find({});
-                expect(operationsInDB.length).toBe(2);
+                const allOperations = await BudgetOperation.find({
+                    _creator: users[0]._id
+                });
+                expect(allOperations.length).toBe(2);
                 done();
             } catch(err){
                 return done(err);
@@ -205,12 +245,26 @@ describe('POST /budget/add', () => {
 });
 
 describe('GET /budget', () => {
-    it('should get all budget operations', done => {
+    it('should get all budget operations for authenticaten user', done => {
         request(app)
         .get('/budget')
+        .set('x-auth', users[0].tokens[0].token)
         .expect(200)
         .expect(res => {
             expect(res.body.length).toBe(2);
+            res.body.forEach(operation => {
+                expect(operation._creator).toBe(users[0]._id.toHexString());
+            });
+        })
+        .end(done);
+    });
+
+    it('should return 401 when user not authenticated', done => {
+        request(app)
+        .get('/budget')
+        .expect(401)
+        .expect(res => {
+            expect(res.body).toEqual({});
         })
         .end(done);
     });
