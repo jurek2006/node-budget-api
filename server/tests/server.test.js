@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const expect = require('expect');
 const request = require('supertest');
 
@@ -6,6 +7,7 @@ const {Test} = require('./../models/test');
 const {User} = require('./../models/user');
 const {BudgetOperation} = require('./../models/budgetOperation');
 const {tests, populateTests, users, populateUsers, budgetOperations, populateBudgetOperations} = require('./seed/seed');
+const {ObjectID} = require('mongodb');
 
 beforeEach(populateTests);
 beforeEach(populateUsers);
@@ -265,6 +267,66 @@ describe('GET /budget', () => {
         .expect(401)
         .expect(res => {
             expect(res.body).toEqual({});
+        })
+        .end(done);
+    });
+});
+
+describe('GET /budget/:id', () => {
+    it('should return operation data for given when creator of operation authenticated', done => {
+        request(app)
+        .get(`/budget/${budgetOperations[2]._id}`)
+        .set('x-auth', users[2].tokens[0].token)
+        .expect(200)
+        .expect(res => {
+            expect(res.body.operation).toBeDefined();
+            expect(res.body.operation._creator).toMatch(budgetOperations[2]._creator.toHexString());
+            expect(res.body.operation.value).toBe(budgetOperations[2].value);
+            expect(res.body.operation.description).toBe(budgetOperations[2].description);
+            expect(new Date(res.body.operation.date)).toEqual(new Date(budgetOperations[2].date));
+        })
+        .end(done);
+    });
+
+    it('should return 401 when different user than creator authenticated', done => {
+        request(app)
+        .get(`/budget/${budgetOperations[2]._id}`)
+        .set('x-auth', users[0].tokens[0].token)
+        .expect(404)
+        .expect(res => {
+            expect(res.body.operation).not.toBeDefined();
+        })
+        .end(done);
+    });
+
+    it('should return 401 when user not authenticated', done => {
+        request(app)
+        .get(`/budget/${budgetOperations[2]._id}`)
+        .expect(401)
+        .expect(res => {
+            expect(res.body.operation).not.toBeDefined();
+        })
+        .end(done);
+    });
+
+    it('should return 404 when invalid id given', done => {
+        request(app)
+        .get(`/budget/1234`)
+        .set('x-auth', users[0].tokens[0].token)
+        .expect(404)
+        .expect(res => {
+            expect(res.body.operation).not.toBeDefined();
+        })
+        .end(done);
+    });
+
+    it('should return 404 when not existing operation id given', done => {
+        request(app)
+        .get(`/budget/${new ObjectID()}`)
+        .set('x-auth', users[0].tokens[0].token)
+        .expect(404)
+        .expect(res => {
+            expect(res.body.operation).not.toBeDefined();
         })
         .end(done);
     });

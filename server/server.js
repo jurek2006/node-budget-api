@@ -8,6 +8,7 @@ const {Test} = require('./models/test');
 const {User} = require('./models/user');
 const {BudgetOperation} = require('./models/budgetOperation');
 const {authenticate} = require('./middleware/authenticate');
+const {ObjectID} = require('mongodb');
 
 const app = express();
 app.use(bodyParser.json());
@@ -58,6 +59,26 @@ app.get('/budget', authenticate, async (req, res) => {
             _creator: req.user //ustawiane przez authenticate
         });
         res.send(allOperations);
+    } catch(err){
+        res.status(400).send(err);
+    }
+});
+
+// route pobierania szczegółów operacji o zadanym id
+app.get('/budget/:id', authenticate, async (req, res) => {
+    const id = req.params.id;
+    if(!ObjectID.isValid(id)){
+        return res.status(404).send();
+    }
+    try{
+        const operation = await BudgetOperation.findOne({
+            _id: id,
+            _creator: req.user //ustawiane przez authenticate
+        });
+        if(!operation){
+            return res.status(404).send();
+        }
+        res.send({operation});
     } catch(err){
         res.status(400).send(err);
     }
