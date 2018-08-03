@@ -85,22 +85,26 @@ app.get('/budget/:id', authenticate, async (req, res) => {
 });
 
 // route modyfikacji operacji 
-app.patch('/budget/:id', authenticate, (req, res) => {
+app.patch('/budget/:id', authenticate, async (req, res) => {
     const id = req.params.id;
     const body = _.pick(req.body, ['value', 'date', 'description'] );
     if(!ObjectID.isValid(id)){
         return res.status(404).send();
     }
-    BudgetOperation.findOneAndUpdate({
-        _id: id,
-        _creator: req.user
-    }, {$set: body}, {new: true}).then(operation => {
+    try{
+
+        const operation = await BudgetOperation.findOneAndUpdate({
+            _id: id,
+            _creator: req.user
+        }, {$set: body}, {new: true});
         if(!operation){
             return res.status(404).send();
         }
-
+        
         res.send({operation});
-    }).catch(err => res.status(400).send());
+    } catch(err){
+        res.status(400).send();
+    }
 });
 
 
