@@ -332,6 +332,232 @@ describe('GET /budget/:id', () => {
     });
 });
 
+describe('PATCH /budget/:id', () => {
+    it('should change operation properties when creator authenticated', done => {
+
+        const newOperationData = {
+            value: 0.12,
+            date: "2018-08-03",
+            description: "zmienione wartości"
+        }
+
+        request(app)
+        .patch(`/budget/${budgetOperations[2]._id}`)
+        .set('x-auth', users[2].tokens[0].token)
+        .send(newOperationData)
+        .expect(200)
+        .expect(res => {
+            expect(res.body.operation._creator).toMatch(budgetOperations[2]._creator.toHexString());
+            expect(res.body.operation.value).toBe(newOperationData.value);
+            expect(res.body.operation.description).toBe(newOperationData.description);
+            expect(new Date(res.body.operation.date)).toEqual(new Date(newOperationData.date));
+        })
+        .end((err, res) => {
+            if(err){
+                return done(err);
+            }
+
+            BudgetOperation.findById(budgetOperations[2]._id).then(operationInDb => {
+                expect(operationInDb._creator.toHexString()).toMatch(budgetOperations[2]._creator.toHexString());
+                expect(operationInDb.value).toBe(newOperationData.value);
+                expect(operationInDb.description).toBe(newOperationData.description);
+                expect(operationInDb.date).toEqual(new Date(newOperationData.date));
+                done();
+            }).catch(err => done(err));
+            }
+        );
+    });
+
+    it('should return 404 and empty response when not owner authenticated', done => {
+        const newOperationData = {
+            value: 0.12,
+            date: "2018-08-03",
+            description: "zmienione wartości"
+        }
+
+        request(app)
+        .patch(`/budget/${budgetOperations[2]._id}`)
+        .set('x-auth', users[0].tokens[0].token)
+        .send(newOperationData)
+        .expect(404)
+        .expect(res => {
+            expect(res.body.operation).toBeUndefined();
+        })
+        .end((err, res) => {
+            if(err){
+                return done(err);
+            }
+
+            BudgetOperation.findById(budgetOperations[2]._id).then(operationInDb => {
+                expect(operationInDb._creator.toHexString()).toMatch(budgetOperations[2]._creator.toHexString());
+                expect(operationInDb.value).toBe(budgetOperations[2].value);
+                expect(operationInDb.description).toBe(budgetOperations[2].description);
+                expect(operationInDb.date).toEqual(new Date(budgetOperations[2].date));
+                done();
+            }).catch(err => done(err));
+            }
+        );
+    });
+
+    it('should return 401 when user not authenticated', done => {
+        const newOperationData = {
+            value: 0.12,
+            date: "2018-08-03",
+            description: "zmienione wartości"
+        }
+
+        request(app)
+        .patch(`/budget/${budgetOperations[2]._id}`)
+        .send(newOperationData)
+        .expect(401)
+        .expect(res => {
+            expect(res.body.operation).toBeUndefined();
+        })
+        .end((err, res) => {
+            if(err){
+                return done(err);
+            }
+
+            BudgetOperation.findById(budgetOperations[2]._id).then(operationInDb => {
+                expect(operationInDb._creator.toHexString()).toMatch(budgetOperations[2]._creator.toHexString());
+                expect(operationInDb.value).toBe(budgetOperations[2].value);
+                expect(operationInDb.description).toBe(budgetOperations[2].description);
+                expect(operationInDb.date).toEqual(new Date(budgetOperations[2].date));
+                done();
+            }).catch(err => done(err));
+            }
+        );
+    });
+
+    it('should change other operation properties when required value not given (creator authenticated)', done => {
+        const newOperationData = {
+            date: "2018-08-03",
+            description: "zmienione wartości"
+        }
+
+        request(app)
+        .patch(`/budget/${budgetOperations[2]._id}`)
+        .set('x-auth', users[2].tokens[0].token)
+        .send(newOperationData)
+        .expect(200)
+        .expect(res => {
+            expect(res.body.operation._creator).toMatch(budgetOperations[2]._creator.toHexString());
+            expect(res.body.operation.value).toBe(budgetOperations[2].value);
+            expect(res.body.operation.description).toBe(newOperationData.description);
+            expect(new Date(res.body.operation.date)).toEqual(new Date(newOperationData.date));
+        })
+        .end((err, res) => {
+            if(err){
+                return done(err);
+            }
+
+            BudgetOperation.findById(budgetOperations[2]._id).then(operationInDb => {
+                expect(operationInDb._creator.toHexString()).toMatch(budgetOperations[2]._creator.toHexString());
+                expect(operationInDb.value).toBe(budgetOperations[2].value);
+                expect(operationInDb.description).toBe(newOperationData.description);
+                expect(operationInDb.date).toEqual(new Date(newOperationData.date));
+                done();
+            }).catch(err => done(err));
+            }
+        );
+    });
+
+    it('should change other operation properties when required date not given (creator authenticated)', done => {
+        const newOperationData = {
+            value: 0.12,
+            description: "zmienione wartości"
+        }
+
+        request(app)
+        .patch(`/budget/${budgetOperations[2]._id}`)
+        .set('x-auth', users[2].tokens[0].token)
+        .send(newOperationData)
+        .expect(200)
+        .expect(res => {
+            expect(res.body.operation._creator).toMatch(budgetOperations[2]._creator.toHexString());
+            expect(res.body.operation.value).toBe(newOperationData.value);
+            expect(res.body.operation.description).toBe(newOperationData.description);
+            expect(new Date(res.body.operation.date)).toEqual(new Date(budgetOperations[2].date));
+        })
+        .end((err, res) => {
+            if(err){
+                return done(err);
+            }
+
+            BudgetOperation.findById(budgetOperations[2]._id).then(operationInDb => {
+                expect(operationInDb._creator.toHexString()).toMatch(budgetOperations[2]._creator.toHexString());
+                expect(operationInDb.value).toBe(newOperationData.value);
+                expect(operationInDb.description).toBe(newOperationData.description);
+                expect(operationInDb.date).toEqual(new Date(budgetOperations[2].date));
+                done();
+            }).catch(err => done(err));
+            }
+        );
+    });
+
+    it('should return 400 and not change operation properties when invalid value given (creator authenticated)', done => {
+        const newOperationData = {
+            value: 'not value',
+            date: "2018-08-03",
+            description: "zmienione wartości"
+        }
+
+        request(app)
+        .patch(`/budget/${budgetOperations[2]._id}`)
+        .set('x-auth', users[2].tokens[0].token)
+        .send(newOperationData)
+        .expect(400)
+        .expect(res => {
+            expect(res.body.operation).toBeUndefined();
+        })
+        .end((err, res) => {
+            if(err){
+                return done(err);
+            }
+
+            BudgetOperation.findById(budgetOperations[2]._id).then(operationInDb => {
+                expect(operationInDb._creator.toHexString()).toMatch(budgetOperations[2]._creator.toHexString());
+                expect(operationInDb.value).toBe(budgetOperations[2].value);
+                expect(operationInDb.description).toBe(budgetOperations[2].description);
+                expect(operationInDb.date).toEqual(new Date(budgetOperations[2].date));
+                done();
+            }).catch(err => done(err));
+            }
+        );
+    });
+
+    it('should not change operation properties when invalid date given (creator authenticated)', done => {
+        const newOperationData = {
+            value: 120,
+            date: "not date",
+            description: "zmienione wartości"
+        }
+
+        request(app)
+        .patch(`/budget/${budgetOperations[2]._id}`)
+        .set('x-auth', users[2].tokens[0].token)
+        .send(newOperationData)
+        .expect(400)
+        .expect(res => {
+            expect(res.body.operation).toBeUndefined();
+        })
+        .end((err, res) => {
+            if(err){
+                return done(err);
+            }
+
+            BudgetOperation.findById(budgetOperations[2]._id).then(operationInDb => {
+                expect(operationInDb._creator.toHexString()).toMatch(budgetOperations[2]._creator.toHexString());
+                expect(operationInDb.value).toBe(budgetOperations[2].value);
+                expect(operationInDb.description).toBe(budgetOperations[2].description);
+                expect(operationInDb.date).toEqual(new Date(budgetOperations[2].date));
+                done();
+            }).catch(err => done(err));
+            }
+        );
+    });
+});
+
 describe('GET /users/me', () => {
     it('should return user if authenticated', done => {
         request(app)
