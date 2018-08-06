@@ -107,6 +107,26 @@ app.patch('/budget/:id', authenticate, async (req, res) => {
     }
 });
 
+// route usuwania operacji
+app.delete('/budget/:id', authenticate, (req, res) => {
+    const id = req.params.id;
+    if(!ObjectID.isValid(id)){
+        return res.status(404).send();
+    }
+    BudgetOperation.findOneAndRemove({
+        _id: id,
+        _creator: req.user
+    }).then(operation => {
+        if(!operation){
+            return res.status(404).send();
+        }
+
+        res.send({operation});
+    }).catch(err => {
+        res.status(400).send();
+    })
+});
+
 
 // ROUTES USER
 

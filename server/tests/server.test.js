@@ -558,6 +558,127 @@ describe('PATCH /budget/:id', () => {
     });
 });
 
+describe('DELETE /budget/:id', () => {
+    it('should delete operation as creator authenticated', done => {
+        request(app)
+        .delete(`/budget/${budgetOperations[2]._id}`)
+        .set('x-auth', users[2].tokens[0].token)
+        .expect(200)
+        .expect(res => {
+            expect(res.body.operation).toBeDefined();
+        })
+        .end(async (err, res) => {
+            if(err){
+                return done(err);
+            }
+
+            try{
+                const operation = await BudgetOperation.findById(budgetOperations[2]._id);
+                expect(operation).toBeNull();
+                done();
+            } catch(err){
+                done(err);
+            }
+            
+        });
+    });
+
+    it('should return 404 when different user than creator authenticated', done => {
+        request(app)
+        .delete(`/budget/${budgetOperations[2]._id}`)
+        .set('x-auth', users[0].tokens[0].token)
+        .expect(404)
+        .expect(res => {
+            expect(res.body.operation).toBeUndefined();
+        })
+        .end(async (err, res) => {
+            if(err){
+                return done(err);
+            }
+
+            try{
+                const operation = await BudgetOperation.findById(budgetOperations[2]._id);
+                expect(operation).toBeDefined();
+                done();
+            } catch(err){
+                done(err);
+            }
+            
+        });
+    });
+
+    it('should return 401 when user not authenticated', done => {
+        request(app)
+        .delete(`/budget/${budgetOperations[2]._id}`)
+        .expect(401)
+        .expect(res => {
+            expect(res.body.operation).toBeUndefined();
+        })
+        .end(async (err, res) => {
+            if(err){
+                return done(err);
+            }
+
+            try{
+                const operation = await BudgetOperation.findById(budgetOperations[2]._id);
+                expect(operation).toBeDefined();
+                done();
+            } catch(err){
+                done(err);
+            }
+            
+        });
+    });
+
+    it('should return 404 if todo not found', done => {
+        request(app)
+        .delete(`/budget/${new ObjectID()}`)
+        .set('x-auth', users[2].tokens[0].token)
+        .expect(404)
+        .expect(res => {
+            expect(res.body.operation).toBeUndefined();
+        })
+        .end(async (err, res) => {
+            if(err){
+                return done(err);
+            }
+
+            try{
+                const operation = await BudgetOperation.findById(budgetOperations[2]._id);
+                expect(operation).toBeDefined();
+                done();
+            } catch(err){
+                done(err);
+            }
+            
+        });
+    });
+
+    it('should return 404 for invalid operation id', done => {
+        request(app)
+        .delete(`/budget/1234`)
+        .set('x-auth', users[2].tokens[0].token)
+        .expect(404)
+        .expect(res => {
+            expect(res.body.operation).toBeUndefined();
+        })
+        .end(async (err, res) => {
+            if(err){
+                return done(err);
+            }
+
+            try{
+                const operation = await BudgetOperation.findById(budgetOperations[2]._id);
+                expect(operation).toBeDefined();
+                done();
+            } catch(err){
+                done(err);
+            }
+            
+        });
+    });
+});
+
 describe('GET /users/me', () => {
     it('should return user if authenticated', done => {
         request(app)
